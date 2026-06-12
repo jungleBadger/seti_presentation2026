@@ -46,3 +46,24 @@ Open the presenter URL with:
 ```
 
 See `.env.example` for the complete configuration.
+
+## GitHub Pages
+
+The presentation is deployed from `main` through
+`.github/workflows/deploy-pages.yml`.
+
+The public URL is:
+
+```text
+https://junglebadger.github.io/seti_presentation2026/
+```
+
+Before the first deployment, open the repository on GitHub and select:
+
+```text
+Settings → Pages → Build and deployment → Source → GitHub Actions
+```
+
+Every subsequent push to `main` will build and deploy the presentation
+automatically. The static Pages deployment includes the presentation and QR
+code, but not the optional Socket.IO multiplex server.

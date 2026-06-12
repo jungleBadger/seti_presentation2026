@@ -15,8 +15,7 @@ export default defineConfig(({ command, mode }) => {
   const API_APP_HOST =
     process.env.APP_HOST || process.env.API_APP_HOST || "0.0.0.0";
   const API_APP_PORT = process.env.APP_PORT || process.env.API_APP_PORT || 3000;
-  const BASE_PREFIX =
-    process.env.BASE_PREFIX || env.BASE_PREFIX || "/matematica-aplicada-unicamp";
+  const BASE_PREFIX = process.env.BASE_PREFIX || env.BASE_PREFIX || "/";
   return {
     // vite config
     plugins: [vue()],
