@@ -1,7 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
-import tailwindcss from "tailwindcss";
-import autoprefixer from "autoprefixer";
 
 // https://vitejs.dev/config/
 
@@ -19,14 +17,6 @@ export default defineConfig(({ command, mode }) => {
   return {
     // vite config
     plugins: [vue()],
-    css: {
-      postcss: {
-        plugins: [
-          tailwindcss("./client/presentation_module/tailwind.config.js"),
-          autoprefixer
-        ]
-      }
-    },
     define: {
       __APP_ENV__: JSON.stringify(env.APP_ENV)
     },

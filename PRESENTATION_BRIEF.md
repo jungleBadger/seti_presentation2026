@@ -1,7 +1,6 @@
 Token usage: total=169.616 input=140.471 (+ 3.144.832 cached) output=29.145 (reasoning 4.357)
 To continue this session, run codex resume 019ea9fc-f630-7343-8fdc-fe41d504acdc
 
-
 # New Presentation Brief
 
 Answer the **Core Questions** first. Short answers are enough. The remaining
@@ -11,7 +10,7 @@ sections can be completed later where relevant.
 
 0. What is the language of the audience:
 
-    Answer: Brazilian Portuguese.
+   Answer: Brazilian Portuguese.
 
 1. What is the working title or topic?
 
@@ -68,7 +67,8 @@ sections can be completed later where relevant.
 
 11. What problem, tension, or question opens the presentation?
 
-    Answer:
+    Answer: Why do plans that look correct and linear often stop being useful as
+    soon as execution begins?
 
 12. What is your proposed answer or central argument?
 
@@ -83,7 +83,6 @@ sections can be completed later where relevant.
 13. What are the three to five main points supporting that argument?
 
     Answer:
-
     - Think a few steps ahead, without pretending to predict everything.
     - Use data to support decisions, while recognizing that data is incomplete.
     - Know why an action or rule exists so it can be reconsidered when its
@@ -115,7 +114,11 @@ sections can be completed later where relevant.
 
 15. What objections or difficult questions should the presentation address?
 
-    Answer:
+    Answer: Whether planning for failure is pessimistic; whether every failure
+    can be called learning; when to insist or change direction; what to do when
+    no complete alternative exists; whether questioning rules is professionally
+    risky; whether asking for help signals weakness; and how AI changes the
+    expectations placed on people entering technology careers.
 
 16. What examples, stories, projects, or personal experiences should be
     included?
@@ -134,11 +137,15 @@ sections can be completed later where relevant.
 17. What evidence is available: data, research, metrics, quotations, case
     studies, or external sources?
 
-    Answer:
+    Answer: Two personal case studies and more than ten years of career
+    experience. The talk does not depend on quantitative claims or claim that
+    the personal examples prove a universal rule.
 
 18. Which claims require current research or verification?
 
-    Answer:
+    Answer: Current IBM career opportunities and any strong claim about the
+    effect of AI on employment. The deck therefore links to the general careers
+    page and avoids predicting job replacement.
 
 19. Is there an existing article, document, abstract, agenda, or previous deck
     that should guide the content? Add paths or links.
@@ -159,7 +166,8 @@ sections can be completed later where relevant.
 21. Will there be a live demonstration, code example, video, animation, or
     audience exercise?
 
-    Answer: no, just story telling, but im open to suggestions
+    Answer: No live demonstration. The talk uses storytelling, brief audience
+    questions, and a 60-second individual exercise near the end.
 
 22. Should the audience follow the slides on their own devices using the
     existing QR code and synchronized presentation feature?
@@ -169,11 +177,13 @@ sections can be completed later where relevant.
 23. Should questions happen during the talk, at specific checkpoints, or only
     at the end?
 
-    Answer: at the end, but open to suggestions 
+    Answer: at the end, but open to suggestions
 
 24. Do you want polls, prompts, quizzes, or audience participation?
 
-    Answer: audience participation would be welcome, but not mandatory
+    Answer: Three lightweight participation moments: a show of hands at the
+    opening, a "posso ou devo?" response during the method, and the final
+    individual exercise. Participation is welcome but never forced.
 
 25. What is the fallback if internet access, a live demo, or synchronization
     fails?
@@ -230,7 +240,7 @@ sections can be completed later where relevant.
 
 34. What screen format and venue conditions should we expect?
 
-    Answer: regular projector screen 
+    Answer: regular projector screen
 
 35. Will the deck be hosted publicly? If so, what URL or repository path should
     it use?
@@ -243,7 +253,9 @@ sections can be completed later where relevant.
 
 37. Are speaker notes, a handout, references, or an exported PDF required?
 
-    Answer: no
+    Answer: Presenter notes are embedded in Reveal and a DELIVERY_GUIDE.md
+    contains timing, transitions, story prompts, likely objections, and
+    rehearsal guidance. An exported PDF is still optional.
 
 38. What contact details or professional links should appear?
 
@@ -255,4 +267,7 @@ sections can be completed later where relevant.
 
 40. What would make you consider this presentation successful?
 
-    Answer:
+    Answer: Students leave less afraid of changing a plan, can name at least one
+    assumption in a plan they currently have, and understand that asking for
+    evidence, communicating risk, requesting help, and taking responsibility are
+    professional strengths.

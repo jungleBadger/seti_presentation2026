@@ -1,8 +1,14 @@
 <!-- App.vue -->
 <template>
-  <div class="reveal" ref="mainSlides">
+  <SessionAdmin
+    v-if="ADMIN_MODE"
+    :default-room="ROOM"
+    :default-socket-origin="SOCKET_ORIGIN"
+  />
+
+  <div v-else class="reveal" ref="mainSlides">
     <div class="slides">
-      <SectionQRCode :url="AUDIENCE_URL" />
+      <SectionQRCode v-if="AUDIENCE_SYNC_ENABLED" :url="AUDIENCE_URL" />
       <SectionOpening />
       <SectionReality />
       <SectionIoTStory />
@@ -11,10 +17,15 @@
       <SectionHumanDifference />
       <SectionCareer />
       <SectionClosing />
+      <SectionIBMInternships />
     </div>
   </div>
 
-  <div v-if="SHOW_STATUS" class="status-badge" aria-live="polite">
+  <div
+    v-if="!ADMIN_MODE && SHOW_STATUS"
+    class="status-badge"
+    aria-live="polite"
+  >
     <div class="row">
       <span class="tag">{{ IS_MASTER ? "MASTER" : "AUDIENCE" }}</span>
       <span class="sep">•</span>
@@ -32,10 +43,11 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { io } from "socket.io-client";
 import createDeck from "../configs/reveal";
-import { store } from "../store/store.js";
 
 /* Slides */
+import SessionAdmin from "./SessionAdmin.vue";
 import SectionQRCode from "./SectionQRCode.vue";
 import SectionOpening from "./SectionOpening.vue";
 import SectionReality from "./SectionReality.vue";
@@ -44,6 +56,7 @@ import SectionPlanningMethod from "./SectionPlanningMethod.vue";
 import SectionOwnershipStory from "./SectionOwnershipStory.vue";
 import SectionHumanDifference from "./SectionHumanDifference.vue";
 import SectionCareer from "./SectionCareer.vue";
+import SectionIBMInternships from "./SectionIBMInternships.vue";
 import SectionClosing from "./SectionClosing.vue";
 
 defineOptions({ name: "JPFApp" });
@@ -51,21 +64,12 @@ defineOptions({ name: "JPFApp" });
 /* Deck ref */
 const mainSlides = ref(null);
 let deck;
+const MASTER_KEY_STORAGE = "planos-faliveis:master-key";
 
 /* ───── Query + loader ───── */
 function qp(name, def = "") {
   const u = new URL(window.location.href);
   return u.searchParams.get(name) ?? def;
-}
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = src;
-    s.async = true;
-    s.onload = resolve;
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
 }
 
 /* ───── Optional multiplex synchronization ───── */
@@ -74,9 +78,31 @@ const SOCKET_ORIGIN = qp(
   import.meta.env.VITE_SOCKET_ORIGIN || ""
 ).replace(/\/$/, "");
 const ROOM = qp("room", import.meta.env.VITE_ROOM || "planos-faliveis");
+const ADMIN_MODE = qp("admin", "") === "1";
 const IS_MASTER = qp("master", "") === "1";
-const MASTER_KEY = qp("key", "");
+const THEME_NAMES = ["projector", "dark", "light"];
+const QUERY_THEME = qp("theme", "dark");
+const THEME = THEME_NAMES.includes(QUERY_THEME) ? QUERY_THEME : "dark";
+const QUERY_MASTER_KEY = qp("key", "");
+if (QUERY_MASTER_KEY) {
+  window.sessionStorage.setItem(MASTER_KEY_STORAGE, QUERY_MASTER_KEY);
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete("key");
+  window.history.replaceState({}, "", cleanUrl);
+}
+const MASTER_KEY =
+  QUERY_MASTER_KEY || window.sessionStorage.getItem(MASTER_KEY_STORAGE) || "";
 const SHOW_STATUS = IS_MASTER || qp("status", "") === "1";
+const AUDIENCE_SYNC_ENABLED = Boolean(SOCKET_ORIGIN);
+
+function applyTheme(theme) {
+  document.documentElement.classList.remove("projector-theme", "light-theme");
+  if (theme === "projector")
+    document.documentElement.classList.add("projector-theme");
+  if (theme === "light") document.documentElement.classList.add("light-theme");
+}
+
+if (!ADMIN_MODE) applyTheme(THEME);
 
 function createAudienceUrl() {
   const configuredUrl = import.meta.env.VITE_PUBLIC_URL;
@@ -85,11 +111,14 @@ function createAudienceUrl() {
   url.searchParams.delete("master");
   url.searchParams.delete("key");
   url.searchParams.delete("status");
-  url.searchParams.delete("socket");
+  url.searchParams.delete("admin");
+  url.searchParams.set("theme", THEME);
+  if (SOCKET_ORIGIN) url.searchParams.set("socket", SOCKET_ORIGIN);
+  else url.searchParams.delete("socket");
   return url.toString();
 }
 
-const AUDIENCE_URL = createAudienceUrl();
+const AUDIENCE_URL = AUDIENCE_SYNC_ENABLED ? createAudienceUrl() : "";
 let socket = null;
 
 /* Badge reactive state */
@@ -97,39 +126,20 @@ const isSocketConnected = ref(false);
 const isGamepadConnected = ref(false);
 
 /* ───── Reveal handlers ───── */
-function handleSlideChange(ev) {
-  store.pageX = ev?.indexh ?? 0;
-  store.pageY = ev?.indexv ?? 0;
+function emitDeckState() {
+  if (!IS_MASTER || !socket || !deck) return;
+  const { h = 0, v = 0, f = 0 } = deck.getIndices();
+  socket.emit("slidechanged", { key: MASTER_KEY, room: ROOM, h, v, f });
+}
 
-  if (IS_MASTER && socket) {
-    socket.emit("slidechanged", {
-      key: MASTER_KEY,
-      room: ROOM,
-      h: ev?.indexh ?? 0,
-      v: ev?.indexv ?? 0,
-      f: ev?.indexf ?? 0
-    });
-  }
+function handleSlideChange() {
+  emitDeckState();
 }
-function handleFragmentShown(ev) {
-  const el = ev?.fragment;
-  if (el) {
-    el.classList.remove("jpf-hidden");
-    el.classList.add("jpf-active");
-  }
-  store.activeFragment = el ?? null;
-  if (IS_MASTER && socket)
-    socket.emit("fragmentshown", { key: MASTER_KEY, room: ROOM });
+function handleFragmentShown() {
+  emitDeckState();
 }
-function handleFragmentHidden(ev) {
-  const el = ev?.fragment;
-  if (el) {
-    el.classList.remove("jpf-active");
-    el.classList.add("jpf-hidden");
-  }
-  store.activeFragment = null;
-  if (IS_MASTER && socket)
-    socket.emit("fragmenthidden", { key: MASTER_KEY, room: ROOM });
+function handleFragmentHidden() {
+  emitDeckState();
 }
 
 /* ───── Gamepad support ───── */
@@ -206,35 +216,39 @@ function stopGamepad() {
 
 /* ───── lifecycle ───── */
 onMounted(async () => {
+  if (ADMIN_MODE) return;
+
   // Reveal
   deck = createDeck(mainSlides.value);
   deck.on("slidechanged", handleSlideChange);
   deck.on("fragmentshown", handleFragmentShown);
   deck.on("fragmenthidden", handleFragmentHidden);
 
-  // Theme toggle
-  const THEMES = ["projector-theme", "light-theme", ""];
-  let themeIndex = 0;
-  const onKey = (e) => {
-    if (e.key.toLowerCase() !== "t") return;
-    document.documentElement.classList.remove("projector-theme", "light-theme");
-    themeIndex = (themeIndex + 1) % THEMES.length;
-    if (THEMES[themeIndex])
-      document.documentElement.classList.add(THEMES[themeIndex]);
-  };
-  window.addEventListener("keydown", onKey);
+  let themeIndex = THEME_NAMES.indexOf(THEME);
+  deck.addKeyBinding(
+    {
+      keyCode: 84,
+      key: "T",
+      description: "Alternar tema da apresentação"
+    },
+    () => {
+    themeIndex = (themeIndex + 1) % THEME_NAMES.length;
+    applyTheme(THEME_NAMES[themeIndex]);
+    }
+  );
 
   await deck.initialize();
 
   if (SOCKET_ORIGIN) {
     try {
-      await loadScript(`${SOCKET_ORIGIN}/socket.io/socket.io.js`);
-      socket = window.io(SOCKET_ORIGIN, {
+      socket = io(SOCKET_ORIGIN, {
         path: "/socket.io",
-        query: { room: ROOM }
+        query: { room: ROOM },
+        transports: ["websocket", "polling"]
       });
       socket.on("connect", () => {
         isSocketConnected.value = true;
+        emitDeckState();
       });
       socket.on("disconnect", () => {
         isSocketConnected.value = false;
@@ -247,8 +261,6 @@ onMounted(async () => {
         socket.on("slidechanged", ({ h = 0, v = 0, f = 0 } = {}) =>
           deck.slide(h, v, f)
         );
-        socket.on("fragmentshown", () => deck.next());
-        socket.on("fragmenthidden", () => deck.prev());
       }
     } catch (error) {
       console.warn("Presentation synchronization is unavailable.", error);
@@ -264,7 +276,6 @@ onMounted(async () => {
 
   // Cleanup
   deck.on("destroy", () => {
-    window.removeEventListener("keydown", onKey);
     window.removeEventListener("gamepadconnected", onGamepadConnected);
     window.removeEventListener("gamepaddisconnected", onGamepadDisconnected);
     try {
@@ -287,7 +298,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .status-badge {
   position: fixed;
   top: 12px;

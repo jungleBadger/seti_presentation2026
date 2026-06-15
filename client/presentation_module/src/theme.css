@@ -131,7 +131,7 @@
 
 .reveal .slides > section > section::before,
 .reveal .slides > section:not(:has(> section))::before {
-  content: "OPEN TALK / 2026";
+  content: var(--section-label, "OPEN TALK / 2026");
   position: absolute;
   top: 1.3rem;
   left: 2rem;
@@ -141,44 +141,6 @@
   font-weight: 500;
   letter-spacing: 0.06em;
   line-height: 1;
-}
-
-.reveal .slides > section:nth-child(1)::before {
-  content: "00 / ENTRADA";
-}
-
-.reveal .slides > section:nth-child(2) > section::before {
-  content: "01 / TESE";
-}
-
-.reveal .slides > section:nth-child(3) > section::before {
-  content: "02 / REALIDADE";
-}
-
-.reveal .slides > section:nth-child(4)::before,
-.reveal .slides > section:nth-child(4) > section::before {
-  content: "03 / CASO 01";
-}
-
-.reveal .slides > section:nth-child(5) > section::before {
-  content: "04 / MÉTODO";
-}
-
-.reveal .slides > section:nth-child(6)::before,
-.reveal .slides > section:nth-child(6) > section::before {
-  content: "05 / CASO 02";
-}
-
-.reveal .slides > section:nth-child(7) > section::before {
-  content: "06 / JULGAMENTO";
-}
-
-.reveal .slides > section:nth-child(8) > section::before {
-  content: "07 / CARREIRA";
-}
-
-.reveal .slides > section:nth-child(9) > section::before {
-  content: "08 / PRÓXIMO PASSO";
 }
 
 .reveal h1,
@@ -288,7 +250,6 @@
 .opening-slide {
   background:
     linear-gradient(90deg, var(--interactive) 0 0.65rem, transparent 0.65rem),
-    linear-gradient(90deg, transparent 0 76%, rgba(15, 98, 254, 0.9) 76% 100%),
     var(--bg);
 }
 

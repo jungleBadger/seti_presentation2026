@@ -1,12 +1,13 @@
 <template>
-  <section class="slide-container content-slide qr-slide">
+  <section
+    class="slide-container content-slide qr-slide"
+    style="--section-label: 'ACESSO / AO VIVO'"
+  >
     <p class="eyebrow">Open talk · apresentação sincronizada</p>
     <h2>Abra no seu celular</h2>
 
     <div class="qr-wrap">
-      <div ref="qrBox" class="qr-box">
-        <div class="qr-fallback">Gerando QR Code…</div>
-      </div>
+      <RuntimeQRCode class="qr-box" :url="url" />
 
       <div class="qr-caption">
         <p class="qr-kicker">Acompanhe os slides no seu dispositivo.</p>
@@ -18,12 +19,18 @@
         </p>
       </div>
     </div>
+
+    <aside class="notes">
+      Use esta tela enquanto as pessoas chegam. Explique que acompanhar pelo
+      celular é opcional. Confirme que a apresentação local continua funcionando
+      mesmo se a sincronização falhar.
+    </aside>
   </section>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { toString as qrToString } from "qrcode";
+import { computed } from "vue";
+import RuntimeQRCode from "./RuntimeQRCode.vue";
 
 defineOptions({ name: "SectionQRCode" });
 
@@ -34,30 +41,7 @@ const props = defineProps({
   }
 });
 
-const qrBox = ref(null);
 const displayUrl = computed(() => props.url.replace(/^https?:\/\//, ""));
-
-onMounted(async () => {
-  const svg = await qrToString(props.url, {
-    type: "svg",
-    margin: 1,
-    width: 420,
-    color: { dark: "#000000", light: "#FFFFFF" }
-  });
-
-  if (!qrBox.value) return;
-  qrBox.value.innerHTML = svg;
-
-  const svgEl = qrBox.value.querySelector("svg");
-  if (svgEl) {
-    // Deixe o CSS controlar o tamanho
-    svgEl.removeAttribute("width");
-    svgEl.removeAttribute("height");
-    svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svgEl.setAttribute("role", "img");
-    svgEl.setAttribute("aria-label", `QR code para ${displayUrl.value}`);
-  }
-});
 </script>
 
 <style scoped>
@@ -75,29 +59,7 @@ onMounted(async () => {
 }
 
 .qr-box {
-  display: grid;
-  place-items: center;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  background: #fff;
-  border: 8px solid #fff;
-  overflow: hidden;
-}
-
-:deep(.qr-box svg) {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-:deep(.qr-box svg rect),
-:deep(.qr-box svg path) {
-  shape-rendering: crispEdges;
-}
-
-.qr-fallback {
-  color: #111;
-  font-weight: 700;
 }
 
 .qr-caption {

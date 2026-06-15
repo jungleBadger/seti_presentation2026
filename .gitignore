@@ -25,3 +25,5 @@ Thumbs.db
 *.log
 
 /client/presentation_module/assets/
+/client/*.zip
+/root/certificates/local/

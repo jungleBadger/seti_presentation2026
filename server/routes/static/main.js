@@ -1,42 +1,55 @@
 "use strict";
 
 const fastifyStatic = require("@fastify/static");
+const fs = require("fs");
 const path = require("path");
+
+const presentationRoot = path.join(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "client",
+  "presentation_module",
+  "dist"
+);
+
+function getBuildPrefix() {
+  try {
+    const indexHtml = fs.readFileSync(
+      path.join(presentationRoot, "index.html"),
+      "utf8"
+    );
+    const assetPath = indexHtml.match(
+      /(?:src|href)="(\/[^"]*\/assets\/)/
+    )?.[1];
+    return assetPath?.slice(0, -"assets/".length) || "/";
+  } catch {
+    return "/";
+  }
+}
 
 module.exports = {
   init: function (app) {
     app.log.info("Initializing static routes");
+    const buildPrefix = getBuildPrefix();
 
     app.register(fastifyStatic, {
-      root: path.join(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "/client/presentation_module/dist"
-      ),
-      prefix: "/", // optional: default '/'
-      decorateReply: true // Do not decorate the reply interface
+      root: presentationRoot,
+      prefix: buildPrefix,
+      decorateReply: true
     });
 
-    app.register(fastifyStatic, {
-      root: path.join(__dirname, "..", "..", "..", "/client/static"),
-      prefix: "/static", // optional: default '/'
-      decorateReply: false
-    });
+    if (buildPrefix !== "/") {
+      app.register(fastifyStatic, {
+        root: presentationRoot,
+        prefix: "/",
+        decorateReply: false
+      });
+    }
 
-    // Serve the index.html file
-    app.get("/", (request, reply) => {
-      reply.sendFile(
-        "index.html",
-        path.join(
-          __dirname,
-          "..",
-          "..",
-          "..",
-          "/client/presentation_module/dist"
-        )
-      ); // serving the index.html from user_module/dist
+    app.get("/", (_request, reply) => {
+      reply.sendFile("index.html", presentationRoot);
     });
 
     return app;
